@@ -20,21 +20,23 @@ There are modules, interfaces and templates.
 ## Instructions - Getting Started
 1. Check-out this repo to a folder under var/www/html or htdocs
 2. Start Apache or WAMP
-3. Create database from the rpovided database.sql
+3. Create database from the provided database.sql
 4. Make sure apache can write in to the directory (or you will have to manually copy the .htaccess and framework/config.php)
-5. Navigate to http://localhost/tinyfx or wherever the folder you checked out this.
+5. Navigate to http://localhost/tinyfx or wherever the folder you checked this out.
 6. Provide database username/password, and modify default settings as needed.
 7. configure.php will generate .hraccess and framework/config.php
 
 - Your database settings are now in framework/config.php
+- N.B: If you rename or move the project folder, you will need configure.php; delete .htaccess and framework.php to reconfigure.
+Do the same when deployed to staging or production server. On production server, delete the configure.php once configured.
 
 - Navigate to http://localhost/tinyfx/admin Username:admin , Password:admin
 
 
 ## Module
-A module is a section of a website, like Admin section, Dashboard, Shopping cart, Blog.
-Each of these modules is put inside a single folder. There is a module controller for every module.
-There can be many functions inside a module controller, and a view file corresponding to each of these functions.
+A module is a section of a website, like Admin section, Dashboard, Shopping cart, Blog etc..
+All contents of each of these modules is put inside a single folder. There is a module controller for every module.
+There can be many functions in a module controller, and a view file corresponding to each of these functions.
 An HTTP request will load a module, execute a function and render the view.
 
 

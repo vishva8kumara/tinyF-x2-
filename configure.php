@@ -2,23 +2,35 @@
 
 $path = rtrim($_SERVER['REQUEST_URI'], 'configure.php');
 $server = $_SERVER['SERVER_NAME'];
+$lang = 'en';
+include 'data/lang.php';
+$lex['en']['title'] = 'TinyF(x)';
+include 'framework/render.php';
 if (isset($_POST['htaccess']) && isset($_POST['config'])){
 	error_reporting(E_ERROR);
-	file_put_contents('.htaccess', $_POST['htaccess']);
-	$result = file_put_contents('framework/config.php', $_POST['config']);
-	if ($result)
-		header('location:http://'.$server.$path);
-	else
-		$error = 'Cannot write config file. Please manually upload .htaccess and framework/config.php';
+	//
+	$conn = mysql_connect($_POST['db_host'], $_POST['db_user'], $_POST['db_pass']);
+	$db = mysql_select_db($_POST['db_name'], $conn);
+	if (!$conn)
+		flash_message('Database credentials are wrong.', 'error');
+	else if (!$db)
+		flash_message('Database is not found.', 'error');
+	else{
+		file_put_contents('.htaccess', $_POST['htaccess']);
+		$result = file_put_contents('framework/config.php', $_POST['config']);
+		if (!$result)
+			flash_message('Cannot write config file. Please manually upload .htaccess and framework/config.php', 'error');
+		else
+			header('location:http://'.$server.$path);
+	}
 }
 
+define ('BASE_URL', 'http://'.$server.$path);
+define ('BASE_URL_STATIC', 'http://'.$server.$path.'static/');
+ob_start();
 ?>
-<h1>TinyF(x)</h1>
 <h2>Configuration</h2>
-<?php
-	if (isset($error))
-		echo '<div style="color:red;">'.$error.'</div>';
-?>
+<?php flash_message_dump(); ?>
 <form name="config" method="post">
 	<table width="100%">
 		<tr>
@@ -27,15 +39,15 @@ if (isset($_POST['htaccess']) && isset($_POST['config'])){
 	<table>
 		<tr>
 			<td>PATH</td>
-			<td><input type="text" name="path" value="<?= $path; ?>" /></td>
+			<td><input type="text" name="path" value="<?= isset($_POST['path']) ? $_POST['path'] : $path; ?>" /></td>
 		</tr>
 		<tr>
 			<td>BASE_URL_STATIC</td>
-			<td><input type="text" name="base_url_static" value="http://<?= $server.$path; ?>static/" /></td>
+			<td><input type="text" name="base_url_static" value="<?= isset($_POST['base_url_static']) ? $_POST['base_url_static'] : 'http://'.$server.$path.'static/'; ?>" /></td>
 		</tr>
 		<tr>
 			<td>STATIC_FILES_ROOT</td>
-			<td><input type="text" name="static_files_root" value="./static/" /></td>
+			<td><input type="text" name="static_files_root" value="<?= isset($_POST['static_files_root']) ? $_POST['static_files_root'] : './static/'; ?>" /></td>
 		</tr>
 	</table>
 	<br/>
@@ -43,38 +55,38 @@ if (isset($_POST['htaccess']) && isset($_POST['config'])){
 	<table>
 		<tr>
 			<td>DB_HOST</td>
-			<td><input type="text" name="db_host" value="localhost" /></td>
+			<td><input type="text" name="db_host" value="<?= isset($_POST['db_host']) ? $_POST['db_host'] : 'localhost'; ?>" /></td>
 		</tr>
 		<tr>
 			<td>DB_NAME</td>
-			<td><input type="text" name="db_name" value="database" /></td>
+			<td><input type="text" name="db_name" value="<?= isset($_POST['db_name']) ? $_POST['db_name'] : 'database'; ?>" /></td>
 		</tr>
 		<tr>
 			<td>DB_USER</td>
-			<td><input type="text" name="db_user" value="root" /></td>
+			<td><input type="text" name="db_user" value="<?= isset($_POST['db_user']) ? $_POST['db_user'] : 'root'; ?>" /></td>
 		</tr>
 		<tr>
 			<td>DB_PASS</td>
-			<td><input type="text" name="db_pass" value="" /></td>
+			<td><input type="text" name="db_pass" value="<?= isset($_POST['db_pass']) ? $_POST['db_pass'] : ''; ?>" /></td>
 		</tr>
 	</table>
-	<p>You are seeing this because you need to configure your web application.</p>
-	<p>If you do not understand, just hit save with these default configurations.</p>
-	<p>Once you configure, remove this 'configure.php' file from the site root.</p>
 			</td>
 			<td>&nbsp;&nbsp;</td>
 			<td>
 	<h3>Config Files</h3>
 	.htaccess<br/>
-	<textarea name="htaccess" rows="5"></textarea>
+	<textarea name="htaccess" rows="5"><?php echo isset($_POST['htaccess']) ? $_POST['htaccess'] : ''; ?></textarea>
 	<br/><br/>
 	config.php<br/>
-	<textarea name="config" rows="13"></textarea>
+	<textarea name="config" rows="13"><?php echo isset($_POST['config']) ? $_POST['config'] : ''; ?></textarea>
 	<br/><br/>
 	<input type="submit" value="Save" />
 			</td>
 		</tr>
 	</table>
+	<p>You are seeing this because you need to configure your web application.</p>
+	<p>If you do not understand, just hit save with these default configurations.</p>
+	<p>Once you configure, remove this 'configure.php' file from the site root.</p>
 </form>
 <script>
 	function generate_files(){
@@ -100,11 +112,14 @@ if (isset($_POST['htaccess']) && isset($_POST['config'])){
 	}
 	for (var i = 0; i < document.config.elements.length; i++){
 		document.config.elements[i].onkeyup = generate_files;
+		document.config.elements[i].onchange = generate_files;
 	}
+<?php if (!isset($_POST['htaccess']) && !isset($_POST['config'])){ ?>
 	generate_files();
+<?php } ?>
 </script>
-<style>
-	input[type="text"]{
+<!--style>
+	/*input[type="text"]{
 		width:300px;
 	}
 	textarea{
@@ -112,6 +127,10 @@ if (isset($_POST['htaccess']) && isset($_POST['config'])){
 	}
 	tr td:first-child{
 		width:162px;
-	}
-</style>
-<?php die(); ?>
+	}*/
+</style-->
+<?php
+$yield = ob_get_contents();
+ob_end_clean();
+$yield = render_template('home.php', $yield, array('title' => 'Configure TinyF(x2) Website'));
+die($yield); ?>
