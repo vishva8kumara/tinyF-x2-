@@ -97,26 +97,12 @@ To help in processing the HTTP requests in modules, you can use various interfac
 Database, ImageMagic, EMail, GCM etc..
 
 To help in rendering HTML in views, there is a library of helper methods such as:
-render_data_view, render_form, render_table, flash_message, render_dropdown, render_calendar, shorten_string, slugify, beautify_datetime
+render_data_view, render_form, render_table, flash_message, render_dropdown, shorten_string, slugify, beautify_datetime
 
 These are pretty self explainatory. You can look up all these on framework/render.php
 
 
 ## Database
-For the first three data related view helpers you need to define data schema as follows:
-
-```php
-$pages_schema = array(
-				'stub' 	=> array('Title', 		'key' => true),
-				'en' 		=> array('English', 	'display' => 'richtext', 'table' => false),
-				'ch' 		=> array('Chinese', 	'display' => 'richtext', 'table' => false),
-				'slides' 	=> array('Slides', 		'display' => 'folder', 'path' => 'user/images/uploads/{stub}', 'table' => false),
-				'edit' 		=> array('Edit', 		'form' => false, 'cmd' => 'admin/pages/{key}', 'default' => true),
-				'view' 	=> array('View', 		'form' => false, 'cmd' => '{key}')
-			);
-
-```
-
 To connect to the database from the module, all you need to call is:
 ```php
 $db = connect_database();
@@ -141,3 +127,126 @@ $db->delete('blog', $params[0]);	//	$params[0] = 6 (from GET parameter 1 - http:
 
 ```
 
+
+## View Helpers
+**Unleash the full potential of Rocket-Fuelled Paper-Planes.!**
+*Treacle for CURD*
+
+For the first three data related view helpers you need to define data schema as follows:
+This is like a 'model' in conventional php frameworks, but much simpler.
+TinyF(x) abstracts the rest for you inteligently and intuitively.
+
+Of course you can define these in a seperate folder and include in module controller,
+but why not define them in module controller itself..
+
+```php
+$pages_schema = array(
+				'stub' 		=> array('Title', 		'key' => true),
+				'en' 		=> array('English', 	'display' => 'richtext', 'table' => false),
+				'ch' 		=> array('Chinese', 	'display' => 'richtext', 'table' => false),
+				'slides' 	=> array('Slides', 		'display' => 'folder', 'path' => 'user/images/uploads/{stub}', 'table' => false),
+				'edit' 		=> array('Edit', 		'form' => false, 'cmd' => 'admin/pages/{key}', 'default' => true),
+				'view' 		=> array('View', 		'form' => false, 'cmd' => '{key}')
+			);
+
+```
+
+#### key
+This is to tell that this field is the primary key. When a form is generated, this will be a hidden field.
+
+#### table
+If this is set to false, this field will not be displayed on the table, but only on form, and data view.
+
+#### display
+Valid values are:
+enum, autofill, calendar, calendar+clock, password, textarea, richtext, email, currency, numeric, check, checkbox, file, folder.
+
+##### enum
+Renders a select (drop-down) on form, and maps a value in database to a more descriptive string for table and data view.
+
+##### autofil
+Similar to enum, but renders an auto complete textbox on form.
+
+##### calendar
+On the form, renders a calendar controller to select a date.
+
+##### password
+An input with type="password"
+
+##### textarea
+A textarea inout that softly resizes to contain text content
+
+
+### render_table
+
+On the module:
+```php
+global $pages_schema;
+$data = array();
+$db = connect_database();
+
+$data['schema'] = $pages_schema;
+$data['pages'] = $db->select(
+				array('stub', 'en', 'ch'),
+				'content');
+		//	SELECT stub, en, ch FROM content
+return $data;
+```
+
+On the view:
+```php
+render_table($schema, $pages, 'tbl-pages');
+```
+This will generate a nice table to display the records.
+You can use the static/css/datatable.css for a fine visual style compatible with this.
+
+
+### render_form
+
+On the module:
+```php
+global $pages_schema;
+$data = array();
+$db = connect_database();
+
+$data['schema'] = $pages_schema;
+$data['page'] = mysql_fetch_assoc(
+				$db->select(
+					array('stub', 'en', 'ch'),
+					'content', 'stub = \''.$params[0].'\''));
+		//	SELECT stub, en, ch FROM content WHERE stub = 'home'
+return $data;
+```
+
+On the view:
+```php
+render_form($schema, $page, 'admin/save-page');
+```
+
+That should work for editing an existing record.
+For adding a new record, you need to make $page = array(/with empty values/);
+
+
+### render_data_view
+This is very similar to render_form, but read-only.
+
+
+### flash_message
+On the templates/home.php you can find <?php flash_message_dump(); ?> line.
+From the module or view, you can put a flash message to be displayed there (on top of the page, right under the masthead.
+
+To put a message there, call this function:
+```php
+flash_message('Blog post saved', 'success');
+
+flash_message('Wrong Username or Password', 'error');
+
+flash_message('You don't have permission to edit this', 'warning');
+
+```
+
+
+### render_dropdown
+### shorten_string
+### slugify
+### beautify_datetime
