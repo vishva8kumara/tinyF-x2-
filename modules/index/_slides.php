@@ -1,5 +1,4 @@
-<?php 	global $static_files_root;
-		$files_path = $static_files_root.$path.'/';
+<?php 	$files_path = STATIC_FILES_ROOT.$path.'/';
 		$slides = array();
 		if (is_dir($files_path) && $dh = opendir($files_path)){
 			while (($file = readdir($dh)) !== false){
@@ -12,11 +11,11 @@
 			closedir($dh);
 		}
 		if (count($slides) > 0){ ?>
-<script src="<?= $base_url_static; ?>js/slides.js"></script>
-<link rel="stylesheet" type="text/css" href="<?= $base_url_static; ?>css/slides.css" />
+<script src="<?= BASE_URL_STATIC; ?>js/slides.js"></script>
+<link rel="stylesheet" type="text/css" href="<?= BASE_URL_STATIC; ?>css/slides.css" />
 <ul class="slides">
 <?php 		foreach ($slides as $slide){ ?>
-	<li><img src="<?= $base_url_static; ?><?= $path; ?>/<?= $slide; ?>" /></li>
+	<li><img src="<?= BASE_URL_STATIC; ?><?= $path; ?>/<?= $slide; ?>" /></li>
 <?php 		} ?>
 </ul>
 <script>new slideShow(document.querySelectorAll('ul.slides')[0]);</script>

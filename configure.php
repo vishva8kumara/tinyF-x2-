@@ -1,17 +1,24 @@
 <?php
 
+$path = rtrim($_SERVER['REQUEST_URI'], 'configure.php');
+$server = $_SERVER['SERVER_NAME'];
 if (isset($_POST['htaccess']) && isset($_POST['config'])){
+	error_reporting(E_ERROR);
 	file_put_contents('.htaccess', $_POST['htaccess']);
-	file_put_contents('framework/config.php', $_POST['config']);
-}
-else{
-	$path = rtrim($_SERVER['REQUEST_URI'], 'configure.php');
-	$server = $_SERVER['SERVER_NAME'];
+	$result = file_put_contents('framework/config.php', $_POST['config']);
+	if ($result)
+		header('location:http://'.$server.$path);
+	else
+		$error = 'Cannot write config file. Please manually upload .htaccess and framework/config.php';
 }
 
 ?>
 <h1>TinyF(x)</h1>
 <h2>Configuration</h2>
+<?php
+	if (isset($error))
+		echo '<div style="color:red;">'.$error.'</div>';
+?>
 <form name="config" method="post">
 	<table width="100%">
 		<tr>

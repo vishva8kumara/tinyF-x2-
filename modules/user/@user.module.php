@@ -68,12 +68,12 @@
 	// --------------------------------------------------------------------
 
 	function images($params){
-		global $template_file, $static_files_root;
+		global $template_file;
 		$template_file = '';
 		$data = array();
 		//
 		$data['path'] = implode('/', $params);
-		$files_path = $static_files_root.$data['path'].'/';
+		$files_path = STATIC_FILES_ROOT.$data['path'].'/';
 		if (!is_dir($files_path))
 			mkdir($files_path, 0775, true);
 		//
